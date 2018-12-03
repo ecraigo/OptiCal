@@ -1,27 +1,38 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
+import * as gcalLoad from './gcalLoad.js';
 import './App.css';
 
 class App extends Component {
+  loadGoogleCalendarApi() {
+      console.log('hello');
+      const script = document.createElement("script");
+      script.src = "https://apis.google.com/js/api.js";
+
+      script.onload = () => {
+        console.log(window.gapi);
+        gcalLoad.handleClientLoad(document, window.gapi);
+      }
+      document.body.appendChild(script);
+    }
+
   render() {
+    console.log('client id:', gcalLoad.getClientId());
+    console.log('api key', gcalLoad.getApiKey());
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <p>Google Calendar API Quickstart</p>
+
+        <button id="authorize_button">Authorize</button>
+        <button id="signout_button">Sign Out</button>
+
+        <pre id="content"></pre>
       </div>
     );
+  }
+
+  componentDidMount() {
+    this.loadGoogleCalendarApi();
   }
 }
 

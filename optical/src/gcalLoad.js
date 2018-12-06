@@ -21,6 +21,7 @@ var gapi = undefined;
 var sourceDocument = undefined;
 var authorizeButton = undefined;
 var signoutButton = undefined;
+
 /**
  *  On load, called to load the auth2 library and API client library.
  */
@@ -61,7 +62,8 @@ function initClient() {
  */
 function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
-    listUpcomingEvents();
+    var today = new Date()
+    listUpcomingEvents(today);
   } else {
   }
 }
@@ -97,13 +99,13 @@ function appendPre(message) {
  * the authorized user's calendar. If no events are found an
  * appropriate message is printed.
  */
-function listUpcomingEvents() {
+function listUpcomingEvents(today) {
   gapi.client.calendar.events.list({
     'calendarId': 'primary',
-    'timeMin': (new Date()).toISOString(),
+    'timeMin': today.toISOString(),
+    'timeMax': (new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)).toISOString(),
     'showDeleted': false,
     'singleEvents': true,
-    'maxResults': 10,
     'orderBy': 'startTime'
   }).then(function(response) {
     var events = response.result.items;

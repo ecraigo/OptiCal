@@ -3,8 +3,8 @@
    Currently the utility function is calculated to prefer longer periods of time
    spent on individual tasks rather than too much switching, and also to prefer
    schedules that have events concentrated near 3 pm. */
-import Event from './objectPrototypes.js';
-import swapTimes, inTaskTimeRange, randomKey from './helpers.js';
+import {Event} from './objectPrototypes.js';
+import {swapTimes, inTaskTimeRange, randomKey} from './helpers.js';
 
 // Changeable weights for our utility function
 const CONSOLIDATION_WEIGHT = 0.1;
@@ -31,7 +31,7 @@ function getBlocks(halfHours) {
 
   // Assign null to unassigned hours, to avoid unreadable code below
   while (t < 24) {
-    if !(t.toString() in halfHours) {
+    if (!(t.toString() in halfHours)) {
       halfHours[t] = null;
     }
     t += 0.5
@@ -39,7 +39,7 @@ function getBlocks(halfHours) {
 
   t = 0;
   while (t < 24) {
-    nextTask = assignment.halfHours[t];
+    nextTask = halfHours[t];
     // Assign new block
     if (nextTask !== currentTask) {
       if (currentTask !== null) {
@@ -92,7 +92,7 @@ function utility(halfHours) {
   // 3 pm, the center of most college students' working days
   var distanceSum = totalDistFromCenterTime(halfHours, 15);
 
-  result = (CONSOLIDATION_WEIGHT * squaredBlockSum) /
+  var result = (CONSOLIDATION_WEIGHT * squaredBlockSum) /
            (DAY_CENTER_WEIGHT * distanceSum + UTILITY_EPSILON);
   return result;
 }
@@ -115,8 +115,8 @@ function findNeighbor(assignment) {
     // this find should never fail
     // task1 = assignment.events.find(e => e.name === assignment.halfHours[time1]);
     // task2 = assignment.events.find(e => e.name === assignment.halfHours[time2]);
-    task1 = assignment.halfHours[time1];
-    task2 = assignment.halfHours[time2];
+    var task1 = assignment.halfHours[time1];
+    var task2 = assignment.halfHours[time2];
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
       newAssignment = assignment;
       // newAssignment.halfHours[time1] = task2.name;
@@ -134,14 +134,14 @@ function findNeighbor(assignment) {
 function naiveHillClimbing(assignment) {
   var reps = 0;
   while (reps < MAX_REPS) {
-    neighbor = findNeighbor(assignment);
+    var neighbor = findNeighbor(assignment);
 
     if (neighbor === undefined) {
       // Likely no neighbors exist, so break
       break;
     }
 
-    if utility(neighbor.halfHours) > utility(assignment.halfHours) {
+    if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
       assignment = neighbor;
       reps = 0;
     } else {
@@ -158,7 +158,7 @@ function epsilonGreedyHillClimbing(assignment) {
   var max_util = 0;
 
   while (reps < MAX_REPS) {
-    neighbor = findNeighbor(assignment);
+    var neighbor = findNeighbor(assignment);
     if (neighbor === undefined) {
       break;
     }
@@ -174,7 +174,7 @@ function epsilonGreedyHillClimbing(assignment) {
     }
 
     // If we improved, set reps to 0; otherwise, add 1
-    assignmentUtility = utility(assignment.halfHours);
+    var assignmentUtility = utility(assignment.halfHours);
     if (assignmentUtility > max_util) {
       max_util = assignmentUtility;
       reps = 0;
@@ -187,26 +187,27 @@ function epsilonGreedyHillClimbing(assignment) {
 
 // Simulated annealing algorithm
 function simulatedAnnealing(assignment) {
-  temperature = INITIAL_TEMPERATURE;
+  var reps = 0;
+  var temperature = INITIAL_TEMPERATURE;
   var max_util = 0;
   var rnd;
 
   while (reps < MAX_REPS) {
     // Generate neighbor
-    neighbor = findNeighbor(assignment);
+    var neighbor = findNeighbor(assignment);
     if (neighbor === undefined) {
       break;
     }
 
-    neighborUtility = utility(neighbor.halfHours);
-    assignmentUtility = utility(assignment.halfHours);
+    var neighborUtility = utility(neighbor.halfHours);
+    var assignmentUtility = utility(assignment.halfHours);
 
     // If better immediately accept
     if (neighborUtility > assignmentUtility) {
       assignment = neighbor;
     } else {
       // Otherwise accept with temperature-based probability
-      probability = Math.exp(-(neighborUtility - assignmentUtility)
+      var probability = Math.exp(-(neighborUtility - assignmentUtility)
                     / temperature);
       rnd = Math.random()
       if (probability <= rnd) {

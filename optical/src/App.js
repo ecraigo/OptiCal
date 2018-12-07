@@ -4,7 +4,7 @@ import * as gcalLoad from './gcalLoad.js';
 import './App.css';
 
 // Needed for testing
-import runTests from './tests.js';
+import {runTests} from './tests.js';
 
 class App extends Component {
   loadGoogleCalendarApi() {

@@ -18,5 +18,5 @@ function randomKey(obj) {
 };
 
 export {
-	swapTimes, inTaskTimeRange
+	swapTimes, inTaskTimeRange, randomKey
 }

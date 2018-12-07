@@ -1,11 +1,11 @@
 /* Mock data to test our algorithms. */
-import TimeRange, Task from './objectPrototypes.js';
-import solveCSP from './scheduleGenerator.js';
-import naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing from
+import {TimeRange, Task} from './objectPrototypes.js';
+import {solveCSP} from './scheduleGenerator.js';
+import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
   './optimizationAlgorithms.js';
 
 // No solutions are possible with these constraints.
-noSolutionsTestData = {
+var noSolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(9, 15)),
     new Task("T2", 1.5, new TimeRange(11.5, 14)),
@@ -22,7 +22,7 @@ noSolutionsTestData = {
 };
 
 // Only a few solutions are possible with these constraints.
-fewSolutionsTestData = {
+var fewSolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(9, 15)),
     new Task("T2", 1.5, new TimeRange(11.5, 14)),
@@ -39,7 +39,7 @@ fewSolutionsTestData = {
 };
 
 // There are many solutions possible with these constraints.
-manySolutionsTestData = {
+var manySolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(0, 24)),
     new Task("T2", 1.5, new TimeRange(0, 24)),
@@ -58,7 +58,7 @@ manySolutionsTestData = {
 function runTest(testData) {
   console.log("");
   console.log("Beginning test.");
-  assignment = solveCSP(testData);
+  var assignment = solveCSP(testData.tasks, testData.freeTime);
   if (assignment === undefined) {
     console.log("Failure to reach solution with CSP solver.");
   } else {
@@ -68,23 +68,23 @@ function runTest(testData) {
     console.log("Here's naïve hill-climbing:");
     console.log(naiveHillClimbing(assignment));
     console.log("Here's epsilon-greedy hill-climbing:");
-    console.log(naiveHillClimbing(assignment));
+    console.log(epsilonGreedyHillClimbing(assignment));
     console.log("Finally, here's simulated annealing:");
-    console.log(naiveHillClimbing(assignment));
+    console.log(simulatedAnnealing(assignment));
     console.log("Great job - it all worked!");
   }
 }
 
 function runTests() {
-  tests = [
+  var tests = [
     ["no solutions", noSolutionsTestData],
     ["few solutions", fewSolutionsTestData],
     ["many solutions", manySolutionsTestData]
   ]
-  for (i = 0; i < tests.length; i++) {
+  for (var i = 0; i < tests.length; i++) {
     console.log("");
-    console.log("Running test" + (i+1) + "/" +
-                 tests.length + "(" + tests[i][0] + "):");
+    console.log("Running test " + (i+1) + "/" +
+                 tests.length + " (" + tests[i][0] + "): ");
     runTest(tests[i][1]);
     console.log("Done with testing suite.");
   }

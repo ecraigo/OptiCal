@@ -22,6 +22,8 @@ const MAX_REPS = 1000;
 // Consolidate times on calendar day into "blocks" spent on a particular task,
 // and return these blocks.
 function getBlocks(halfHours) {
+  // deep copy
+  halfHours = JSON.parse(JSON.stringify(halfHours));
   var blocks = [];
   var currentTask = null;
   var nextTask = null;
@@ -118,7 +120,7 @@ function findNeighbor(assignment) {
     var task1 = assignment.halfHours[time1];
     var task2 = assignment.halfHours[time2];
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
-      newAssignment = assignment;
+      newAssignment = JSON.parse(JSON.stringify(assignment));
       // newAssignment.halfHours[time1] = task2.name;
       // newAssignment.halfHours[time2] = task1.name;
       swapTimes(newAssignment.halfHours, time1, time2);
@@ -142,7 +144,7 @@ function naiveHillClimbing(assignment) {
     }
 
     if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
-      assignment = neighbor;
+      assignment = JSON.parse(JSON.stringify(neighbor));
       reps = 0;
     } else {
       reps += 1;
@@ -166,10 +168,10 @@ function epsilonGreedyHillClimbing(assignment) {
     // Promote random exploration with prb of epsilon
     rnd = Math.random();
     if (rnd <= OPTIMIZATION_EPSILON) {
-      assignment = neighbor;
+      assignment = JSON.parse(JSON.stringify(neighbor));
     } else {
       if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
-        assignment = neighbor;
+        assignment = JSON.parse(JSON.stringify(neighbor));
       }
     }
 
@@ -204,14 +206,14 @@ function simulatedAnnealing(assignment) {
 
     // If better immediately accept
     if (neighborUtility > assignmentUtility) {
-      assignment = neighbor;
+      assignment = JSON.parse(JSON.stringify(neighbor));
     } else {
       // Otherwise accept with temperature-based probability
       var probability = Math.exp(-(neighborUtility - assignmentUtility)
                     / temperature);
       rnd = Math.random()
       if (probability <= rnd) {
-        assignment = neighbor;
+        assignment = JSON.parse(JSON.stringify(neighbor));
       }
     }
 

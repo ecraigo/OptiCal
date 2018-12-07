@@ -17,16 +17,15 @@ function callSolveCSP(today){
 }
 
 
-<<<<<<< HEAD
 function solveCSP(tasksDesired, freeTimes) {
 	var timeVars = {}
 	// Initialize free time variables by the half hour.
 	for (var i = 0; i < freeTimes.length; i++){
 		var currentFreeBlock = freeTimes[i].start
-		while (currentFreeBlock < freeTimes[i].end){
-			timeVars[currentFreeBlock] = null
+			while (currentFreeBlock < freeTimes[i].end){
+				timeVars[currentFreeBlock] = null
 			currentFreeBlock = currentFreeBlock + 0.5
-		}
+			}
 	}
 	// Initialize with assignment of desired tasks and remaining time with free time.
 	var timesKeys = Object.keys(timeVars)
@@ -39,70 +38,9 @@ function solveCSP(tasksDesired, freeTimes) {
 				timeVars[timesKeys[j]] = currentTask
   			neededTimeBlocks = neededTimeBlocks - 1
   			j = j + 1
-=======
-function solveCSP(today, tasksDesired, freeTimes) {
-  window.gapi.client.calendar.events.list({
-    'calendarId': 'primary',
-    'timeMin': today.toISOString(),
-    'timeMax': (new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)).toISOString(),
-    'showDeleted': false,
-    'singleEvents': true,
-    'orderBy': 'startTime'
-  }).then(function(response) {
-  	var timeVars = {}
-  	// Initialize free time variables by the half hour.
-  	for (var i = 0; i < freeTimes.length; i++){
-  		var currentFreeBlock = freeTimes[i].start
- 		while (currentFreeBlock < freeTimes[i].end){
- 			timeVars[currentFreeBlock] = null
-  			currentFreeBlock = currentFreeBlock + 0.5
- 		}
-  	}
-  	// Initialize with assignment of desired tasks and remaining time with free time.
-  	var timesKeys = Object.keys(timeVars)
-  	var j = 0
-  	for (var k = 0; k < tasksDesired.length; k++){
-  		var currentTask = tasksDesired[k]
-  		var neededTimeBlocks = currentTask.hours * 2
-  		while (neededTimeBlocks > 0){
-  			if (j < timesKeys.length) {
-  				timeVars[timesKeys[j]] = currentTask
-	  			neededTimeBlocks = neededTimeBlocks - 1 
-	  			j = j + 1
-	  		}
-	  		else {
-	  			break
-	  		}
-  		}
-  	}
-  	// Swap constraint violating variable with another with epsilon chance of random swap.
-  	console.log(timeVars)
-  	var illegalVars = constraintsViolated(timeVars)
-  	var iterations = 0
-  	while (illegalVars.length > 0 && iterations < 100){
-  		var randomIndex1 = Math.floor(Math.random() * illegalVars.length)
-  		console.log(randomIndex1, "hello")
-  		var probability = Math.random()
-  		var randomTimeVar = null
-  		if (probability > epsilon) {
-  			var task1TimeRange = timeVars[illegalVars[randomIndex1]].timeRange
-  			randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
-  			console.log(randomTimeVar, "iter")
-  			var maxIter = 0
-  			while (randomTimeVar == randomIndex1 && maxIter < 100){
-  				randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
-  				maxIter = maxIter + 1
-  				console.log(randomIndex1, randomTimeVar)
-  			}
   		}
   		else {
-  			randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
-  			var maxIters = 0
-  			while (randomTimeVar == randomIndex1 && maxIters < 100){
-  				randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
-  				maxIters = maxIters + 1
-  			}
->>>>>>> 3d8d2232d52da330572ab2808e1da32b47210b12
+  			break
   		}
 		}
 	}

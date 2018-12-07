@@ -4,6 +4,11 @@ import {solveCSP} from './scheduleGenerator.js';
 import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
   './optimizationAlgorithms.js';
 
+var T1 = new Task("T1", 2, new TimeRange(9, 15));
+var T2 = new Task("T2", 1.5, new TimeRange(11.5, 14));
+var T3 = new Task("T3", 4, new TimeRange(0, 24));
+var T4 = new Task("T4", 3.5, new TimeRange(19, 23));
+
 // No solutions are possible with these constraints.
 var noSolutionsTestData = {
   tasks: [
@@ -55,6 +60,33 @@ var manySolutionsTestData = {
   ]
 };
 
+var manySolutionsMockCSPSolution = {
+  tasks: manySolutionsTestData.tasks,
+  halfHours: {
+    "9.5": T1,
+    "10": T3,
+    "10.5": T1,
+    "11": T2,
+    "11.5": T4,
+    "13": T2,
+    "13.5": T1,
+    "14": T3,
+    "14.5": T4,
+    "15.5": T3,
+    "16": T3,
+    "16.5": T3,
+    "18.5": T1,
+    "19": T3,
+    "19.5": T3,
+    "21": T4,
+    "21.5": T4,
+    "22": T2,
+    "22.5": T4,
+    "23": T3,
+    "23.5": T4
+  }
+}
+
 function runTest(testData) {
   console.log("");
   console.log("Beginning test.");
@@ -75,19 +107,34 @@ function runTest(testData) {
   }
 }
 
+function runOptimizationAlgs(assignment) {
+  console.log("CSP solver success. Here's the solution reached:");
+  console.log(assignment);
+  console.log("Next let's run optimization algorithms.");
+  console.log("Here's naïve hill-climbing:");
+  console.log(naiveHillClimbing(assignment));
+  console.log("Here's epsilon-greedy hill-climbing:");
+  console.log(epsilonGreedyHillClimbing(assignment));
+  console.log("Finally, here's simulated annealing:");
+  console.log(simulatedAnnealing(assignment));
+  console.log("Great job - it all worked!");
+}
+
 function runTests() {
-  var tests = [
-    ["no solutions", noSolutionsTestData],
-    ["few solutions", fewSolutionsTestData],
-    ["many solutions", manySolutionsTestData]
-  ]
-  for (var i = 0; i < tests.length; i++) {
-    console.log("");
-    console.log("Running test " + (i+1) + "/" +
-                 tests.length + " (" + tests[i][0] + "): ");
-    runTest(tests[i][1]);
-    console.log("Done with testing suite.");
-  }
+  console.log(manySolutionsMockCSPSolution);
+  runOptimizationAlgs(manySolutionsMockCSPSolution);
+  // var tests = [
+  //   ["no solutions", noSolutionsTestData],
+  //   ["few solutions", fewSolutionsTestData],
+  //   ["many solutions", manySolutionsTestData]
+  // ]
+  // for (var i = 0; i < tests.length; i++) {
+  //   console.log("");
+  //   console.log("Running test " + (i+1) + "/" +
+  //                tests.length + " (" + tests[i][0] + "): ");
+  //   runTest(tests[i][1]);
+  //   console.log("Done with testing suite.");
+  // }
 }
 
 export {

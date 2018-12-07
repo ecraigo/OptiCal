@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import * as gcalLoad from './gcalLoad.js';
-import * as scheduleGenerator from './scheduleGenerator.js';
 import './App.css';
 
 class App extends Component {
@@ -16,10 +15,6 @@ class App extends Component {
       }
       document.body.appendChild(script);
     }
-
-  showPotentialSchedules() {
-    scheduleGenerator.setupSchedules(document)
-  }
 
   render() {
     return (
@@ -53,7 +48,6 @@ class App extends Component {
 
   componentDidMount() {
     this.loadGoogleCalendarApi();
-    this.showPotentialSchedules();
   }
 }
 

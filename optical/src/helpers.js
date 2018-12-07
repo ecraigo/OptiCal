@@ -21,6 +21,14 @@ function randomKey(obj) {
     return keys[keys.length * Math.random() << 0];
 };
 
+function findTaskByName(assignment, taskName) {
+	if (taskName === null) {
+		return null;
+	} else {
+		return assignment.tasks.find(e => e.name === taskName);
+	}
+}
+
 export {
 	swapTimes, inTaskTimeRange, randomKey
 }

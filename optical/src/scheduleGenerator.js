@@ -1,24 +1,18 @@
-import * as gcalLoad from './gcalLoad.js';
 
-var submitButton = undefined;
-var sourceDocument = undefined;
-var desiredEvents = undefined;
-var desiredEventsTimes = undefined;
 
-function setupSchedules(sourceDoc) {
-	sourceDocument = sourceDoc;
-	submitButton = sourceDocument.getElementById('authorize_button');
-	desiredEvents = sourceDocument.getElementById('events');
-	desiredEventsTimes = sourceDocument.getElementById('times');
-	// (sourceDocument.getElementById('schedules')).appendChild(sourceDocument.createTextNode("hi" + '\n'));
-	submitButton.onClick = iterativeMinConflicts(desiredEvents, desiredEventsTimes)
-	// iterativeMinConflicts(desiredEvents, desiredEventsTimes, )
-}
-
-function iterativeMinConflicts(desiredEvents, desiredEventsTimes) {
-	console.log(desiredEvents.value)
+function solveCSP(today) {
+  window.gapi.client.calendar.events.list({
+    'calendarId': 'primary',
+    'timeMin': today.toISOString(),
+    'timeMax': (new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)).toISOString(),
+    'showDeleted': false,
+    'singleEvents': true,
+    'orderBy': 'startTime'
+  }).then(function(response) {
+    console.log(response.result.items)
+  });
 }
 
 export {
-	iterativeMinConflicts, setupSchedules
+	solveCSP
 }

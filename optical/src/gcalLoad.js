@@ -1,4 +1,5 @@
 import secrets from './secrets.json'
+import * as scheduleGenerator from './scheduleGenerator.js';
 
 function getClientId() {
   return secrets["client_id"];
@@ -64,6 +65,7 @@ function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
     var today = new Date()
     listUpcomingEvents(today);
+    scheduleGenerator.solveCSP(today)
   } else {
   }
 }

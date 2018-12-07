@@ -7,7 +7,9 @@ var tasksDesired = [new objectPrototypes.Task('T1', 2),
 var freeTimes = [new objectPrototypes.TimeRange(1, 5),
 					new objectPrototypes.TimeRange(7, 12)]	
 
-var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)				
+var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)		
+
+var epsilon = 0.05
 
 function solveCSP(today) {
   window.gapi.client.calendar.events.list({
@@ -19,26 +21,54 @@ function solveCSP(today) {
     'orderBy': 'startTime'
   }).then(function(response) {
   	var timeVars = {}
+  	// Initialize free time variables by the half hour.
   	for (var i = 0; i < freeTimes.length; i++){
   		var currentFreeBlock = freeTimes[i].start
  		while (currentFreeBlock < freeTimes[i].end){
- 			timeVars.currentFreeBlock = undefined
+ 			timeVars[currentFreeBlock] = null
   			currentFreeBlock = currentFreeBlock + 0.5
  		}
   	}
+  	// Initialize with assignment of desired tasks.
   	var timesKeys = Object.keys(timeVars)
-  	var timesKeysIndex = 0
+  	var j = 0
   	for (var i = 0; i < tasksDesired.length; i++){
   		var currentTask = tasksDesired[i]
-  		var neededTimeBlocks = currentTask.timerange
+  		var neededTimeBlocks = currentTask.hours * 2
   		while (neededTimeBlocks > 0){
-  			if (timesKeysIndex < timesKeys.length) {
-  				timesKeys[timesKeysIndex] = currentTask
+  			if (j < timesKeys.length) {
+  				timeVars[timesKeys[j]] = currentTask.name
 	  			neededTimeBlocks = neededTimeBlocks - 1 
-	  			timesKeysIndex = timesKeysIndex + 1
+	  			j = j + 1
 	  		}
   		}
   	}
+  	var illegalVars = []
+  	while (constraintsViolated(timeVars, illegalVars) > 0){
+  		var randomIndex1 = Math.random() * illegalVars.length
+  		var probability = Math.random()
+  		var randomIndex2 = null
+  		if (probability > epsilon) {
+  			randomIndex2 = Math.random() * illegalVars.length
+  			while (randomIndex2 == randomIndex1){
+  				randomIndex2 = Math.random() * illegalVars.length
+  			}
+  		}
+  		else {
+  			randomIndex2 = Math.random() * illegalVars.length
+  			while (randomIndex2 == randomIndex1){
+  				randomIndex2 = Math.random() * illegalVars.length
+  			}
+  		}
+  	}
+});
+}
+
+function constraintsViolated(){
+	console.log("hello")
+	return true
+}
+
   	// var events = response.result.items;
   	// console.log(events)
   	// var variables = {}
@@ -61,8 +91,6 @@ function solveCSP(today) {
   	// 	}
 
   	// }
-  });
-}
 
 export {
 	solveCSP

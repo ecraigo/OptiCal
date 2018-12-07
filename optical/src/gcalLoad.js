@@ -65,7 +65,7 @@ function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
     var today = new Date()
     listUpcomingEvents(today);
-    scheduleGenerator.solveCSP(today)
+    scheduleGenerator.callSolveCSP(today)
   } else {
   }
 }

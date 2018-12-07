@@ -12,7 +12,12 @@ var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes
 
 var epsilon = 0.05
 
-function solveCSP(today) {
+function callSolveCSP(today){
+	solveCSP(today, tasksDesired, freeTimes);
+}
+
+
+function solveCSP(today, tasksDesired, freeTimes) {
   window.gapi.client.calendar.events.list({
     'calendarId': 'primary',
     'timeMin': today.toISOString(),
@@ -128,5 +133,5 @@ function constraintsViolated(assignments){
   	// }
 
 export {
-	solveCSP
+	callSolveCSP, solveCSP
 }

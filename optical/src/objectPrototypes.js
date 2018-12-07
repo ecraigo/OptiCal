@@ -33,7 +33,7 @@ function Event(name, startTime, length) {
 /* Object representing calendar assignment. This contains all information
    needed to run our algorithms. Takes in a list of tasks and a list of free,
    non-overlapping TimeRange objects representing our free times. Returns an
-   assignment with all our free time mapped to undefined. For now, only deals
+   assignment with all our free time mapped to null. For now, only deals
    with a single day. */
 function CalendarAssignment(tasks, freeTime) {
   this.tasks = tasks;
@@ -43,7 +43,7 @@ function CalendarAssignment(tasks, freeTime) {
   freeTime.forEach(function(timeRange){
     var t = timeRange.start;
     while (t < timeRange.end) {
-      that.halfHours[t] = undefined;
+      that.halfHours[t] = null;
       t += 0.5;
     }
   });

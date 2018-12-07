@@ -20,6 +20,24 @@ function Task(name, hours, timeRange) {
   this.timeRange = timeRange;
 }
 
+/* Object representing calendar assignment. This contains all information
+   needed to run our algorithms. Takes in a list of tasks and a list of free,
+   non-overlapping TimeRange objects representing our free times. Returns an
+   assignment with all our free time mapped to undefined. For now, only deals
+   with a single day. */
+function CalendarAssignment(tasks, freeTime) {
+  this.tasks = tasks
+  this.hours = {}
+
+  freeTime.forEach(function(timeRange){
+    var t = timeRange.start;
+    while (t < timeRange.end) {
+      this.hours[t] = undefined;
+      t += 0.5;
+    }
+  });
+}
+
 export {
-  TimeRange, Task
+  TimeRange, Task, CalendarAssignment
 }

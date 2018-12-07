@@ -7,8 +7,8 @@ import {Event} from './objectPrototypes.js';
 import {swapTimes, inTaskTimeRange, randomKey} from './helpers.js';
 
 // Changeable weights for our utility function
-const CONSOLIDATION_WEIGHT = 0.1;
-const DAY_CENTER_WEIGHT = 10;
+const CONSOLIDATION_WEIGHT = .1;
+const DAY_CENTER_WEIGHT = 0;
 // Included so we have no divide-by-zero errors
 const UTILITY_EPSILON = 0.1;
 // Used in epsilon-greedy hill climbing
@@ -17,7 +17,7 @@ const OPTIMIZATION_EPSILON = 0.05;
 const INITIAL_TEMPERATURE = 1000;
 const ALPHA = 0.95;
 // Don't try anything too many times
-const MAX_REPS = 1000;
+const MAX_REPS = 5000;
 
 // Consolidate times on calendar day into "blocks" spent on a particular task,
 // and return these blocks.
@@ -61,7 +61,7 @@ function getBlocks(halfHours) {
   }
   // Add ending block
   if (currentTask !== null) {
-    blocks.push(timeAmount);
+    blocks.push(new Event(currentTask, currentStartingTime, timeAmount));
   }
 
   return blocks;
@@ -87,8 +87,10 @@ function utility(halfHours) {
   // Sum the squares of lengths of blocks in the assignment to promote longer
   // blocks of work on a single task
   var blocks = getBlocks(halfHours);
-  var squaredBlockSum = blocks.map(block => Math.pow(block.length, 2))
+  // console.log(blocks);
+  var squaredBlockSum = blocks.map(event => Math.pow(event.length, 2))
                               .reduce((a, b) => a + b, 0);
+  // console.log(squaredBlockSum);
 
   // Divide this by the total distance of all half-hour blocks of work from
   // 3 pm, the center of most college students' working days
@@ -115,16 +117,15 @@ function findNeighbor(assignment) {
 
     // Check for constraint violation
     // this find should never fail
-    // task1 = assignment.events.find(e => e.name === assignment.halfHours[time1]);
-    // task2 = assignment.events.find(e => e.name === assignment.halfHours[time2]);
-    var task1 = assignment.halfHours[time1];
-    var task2 = assignment.halfHours[time2];
+    var task1 = assignment.tasks.find(e => e.name === assignment.halfHours[time1]);
+    var task2 = assignment.tasks.find(e => e.name === assignment.halfHours[time2]);
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
       newAssignment = JSON.parse(JSON.stringify(assignment));
-      // newAssignment.halfHours[time1] = task2.name;
-      // newAssignment.halfHours[time2] = task1.name;
-      swapTimes(newAssignment.halfHours, time1, time2);
+      newAssignment.halfHours[time1] = task2.name;
+      newAssignment.halfHours[time2] = task1.name;
       success = true;
+      // console.log("neighbor found?");
+      // console.log(newAssignment);
     }
     reps += 1;
   }
@@ -143,7 +144,11 @@ function naiveHillClimbing(assignment) {
       break;
     }
 
+    // console.log("original utility: " + utility(assignment.halfHours));
+    // console.log("neighboring utility: " + utility(neighbor.halfHours));
+
     if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
+      console.log("we found something better!!!!");
       assignment = JSON.parse(JSON.stringify(neighbor));
       reps = 0;
     } else {
@@ -206,6 +211,7 @@ function simulatedAnnealing(assignment) {
 
     // If better immediately accept
     if (neighborUtility > assignmentUtility) {
+      console.log("we found something better!!!!");
       assignment = JSON.parse(JSON.stringify(neighbor));
     } else {
       // Otherwise accept with temperature-based probability

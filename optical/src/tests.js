@@ -122,6 +122,7 @@ function runOptimizationAlgs(assignment) {
 
 function runTests() {
   console.log(manySolutionsMockCSPSolution);
+  runTest(noSolutionsTestData);
   runOptimizationAlgs(manySolutionsMockCSPSolution);
   // var tests = [
   //   ["no solutions", noSolutionsTestData],

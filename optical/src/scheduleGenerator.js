@@ -1,13 +1,14 @@
 import * as objectPrototypes from './objectPrototypes.js';
+import * as helpers from './helpers.js';
 
-var tasksDesired = [new objectPrototypes.Task('T1', 2),
-					new objectPrototypes.Task('T2', 3), 
+var tasksDesired = [new objectPrototypes.Task('T1', 2, new objectPrototypes.TimeRange(0, 24)),
+					new objectPrototypes.Task('T2', 3, new objectPrototypes.TimeRange(0, 24)), 
 					new objectPrototypes.Task('T3', 1, new objectPrototypes.TimeRange(1, 3))]
 
 var freeTimes = [new objectPrototypes.TimeRange(1, 5),
-					new objectPrototypes.TimeRange(7, 12)]	
+					new objectPrototypes.TimeRange(7, 12)]
 
-var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)		
+var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
 
 var epsilon = 0.05
 
@@ -29,46 +30,80 @@ function solveCSP(today) {
   			currentFreeBlock = currentFreeBlock + 0.5
  		}
   	}
-  	// Initialize with assignment of desired tasks.
+  	// Initialize with assignment of desired tasks and remaining time with free time.
   	var timesKeys = Object.keys(timeVars)
   	var j = 0
-  	for (var i = 0; i < tasksDesired.length; i++){
-  		var currentTask = tasksDesired[i]
+  	for (var k = 0; k < tasksDesired.length; k++){
+  		var currentTask = tasksDesired[k]
   		var neededTimeBlocks = currentTask.hours * 2
   		while (neededTimeBlocks > 0){
   			if (j < timesKeys.length) {
-  				timeVars[timesKeys[j]] = currentTask.name
+  				timeVars[timesKeys[j]] = currentTask
 	  			neededTimeBlocks = neededTimeBlocks - 1 
 	  			j = j + 1
 	  		}
   		}
   	}
-  	var illegalVars = []
-  	while (constraintsViolated(timeVars, illegalVars) > 0){
-  		var randomIndex1 = Math.random() * illegalVars.length
+  	// Swap constraint violating variable with another with epsilon chance of random swap.
+  	console.log(timeVars)
+  	var illegalVars = constraintsViolated(timeVars)
+  	var iterations = 0
+  	while (illegalVars.length > 0 && iterations < 100){
+  		var randomIndex1 = Math.floor(Math.random() * illegalVars.length)
+  		console.log(randomIndex1, "hello")
   		var probability = Math.random()
-  		var randomIndex2 = null
+  		var randomTimeVar = null
   		if (probability > epsilon) {
-  			randomIndex2 = Math.random() * illegalVars.length
-  			while (randomIndex2 == randomIndex1){
-  				randomIndex2 = Math.random() * illegalVars.length
+  			var task1TimeRange = timeVars[illegalVars[randomIndex1]].timeRange
+  			randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
+  			console.log(randomTimeVar, "iter")
+  			var maxIter = 0
+  			while (randomTimeVar == randomIndex1 && maxIter < 100){
+  				randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
+  				maxIter = maxIter + 1
+  				console.log(randomIndex1, randomTimeVar)
   			}
   		}
   		else {
-  			randomIndex2 = Math.random() * illegalVars.length
-  			while (randomIndex2 == randomIndex1){
-  				randomIndex2 = Math.random() * illegalVars.length
+  			randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
+  			var maxIters = 0
+  			while (randomTimeVar == randomIndex1 && maxIters < 100){
+  				randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
+  				maxIters = maxIters + 1
   			}
   		}
+  		console.log(randomIndex1, randomTimeVar, illegalVars)
+  		console.log(illegalVars[randomIndex1], randomTimeVar, illegalVars)
+  		helpers.swapTimes(timeVars, illegalVars[randomIndex1], randomTimeVar)
+  		illegalVars = constraintsViolated(timeVars)
+  		iterations = iterations + 1
   	}
+  	console.log(timeVars)
+  	var schedule = new objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
+  	schedule.halfHours = timeVars
+  	return schedule
 });
 }
 
-function constraintsViolated(){
-	console.log("hello")
-	return true
+
+// Helper function to check for constraints and if there are, return them as a list.
+function constraintsViolated(assignments){
+	var violated = []
+	for (var k in assignments){
+		var task = assignments[k]
+		if (task != null) {
+			var allowedTime = task.timeRange
+			console.log(allowedTime, k)
+			if (k < allowedTime.start || k > allowedTime.end){
+				violated.push(k)
+			}
+		}
+	}
+	console.log(violated)
+	return violated
 }
 
+// For next time.
   	// var events = response.result.items;
   	// console.log(events)
   	// var variables = {}

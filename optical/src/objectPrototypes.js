@@ -20,24 +20,35 @@ function Task(name, hours, timeRange) {
   this.timeRange = timeRange;
 }
 
+/* Object for single event in calendar. */
+function Event(name, startTime, length) {
+  // Name of event
+  this.name = name;
+  // Starting time of event in same 24-hour format
+  this.startTime = startTime;
+  // Length of event in hours
+  this.length = length;
+}
+
 /* Object representing calendar assignment. This contains all information
    needed to run our algorithms. Takes in a list of tasks and a list of free,
    non-overlapping TimeRange objects representing our free times. Returns an
    assignment with all our free time mapped to undefined. For now, only deals
    with a single day. */
 function CalendarAssignment(tasks, freeTime) {
-  this.tasks = tasks
-  this.hours = {}
+  this.tasks = tasks;
+  this.halfHours = {};
+  var that = this;
 
   freeTime.forEach(function(timeRange){
     var t = timeRange.start;
     while (t < timeRange.end) {
-      this.hours[t] = undefined;
+      that.halfHours[t] = undefined;
       t += 0.5;
     }
   });
 }
 
 export {
-  TimeRange, Task, CalendarAssignment
+  TimeRange, Task, Event, CalendarAssignment
 }

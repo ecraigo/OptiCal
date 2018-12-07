@@ -1,8 +1,11 @@
 /* Mock data to test our algorithms. */
 import TimeRange, Task from './objectPrototypes.js';
+import solveCSP from './scheduleGenerator.js';
+import naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing from
+  './optimizationAlgorithms.js';
 
 // No solutions are possible with these constraints.
-noSolutionsTest = {
+noSolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(9, 15)),
     new Task("T2", 1.5, new TimeRange(11.5, 14)),
@@ -19,7 +22,7 @@ noSolutionsTest = {
 };
 
 // Only a few solutions are possible with these constraints.
-fewSolutionsTest = {
+fewSolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(9, 15)),
     new Task("T2", 1.5, new TimeRange(11.5, 14)),
@@ -36,7 +39,7 @@ fewSolutionsTest = {
 };
 
 // There are many solutions possible with these constraints.
-manySolutionsTest = {
+manySolutionsTestData = {
   tasks: [
     new Task("T1", 2, new TimeRange(0, 24)),
     new Task("T2", 1.5, new TimeRange(0, 24)),
@@ -51,3 +54,42 @@ manySolutionsTest = {
     new TimeRange(21, 24)
   ]
 };
+
+function runTest(testData) {
+  console.log("");
+  console.log("Beginning test.");
+  assignment = solveCSP(testData);
+  if (assignment === undefined) {
+    console.log("Failure to reach solution with CSP solver.");
+  } else {
+    console.log("CSP solver success. Here's the solution reached:");
+    console.log(assignment);
+    console.log("Next let's run optimization algorithms.");
+    console.log("Here's naïve hill-climbing:");
+    console.log(naiveHillClimbing(assignment));
+    console.log("Here's epsilon-greedy hill-climbing:");
+    console.log(naiveHillClimbing(assignment));
+    console.log("Finally, here's simulated annealing:");
+    console.log(naiveHillClimbing(assignment));
+    console.log("Great job - it all worked!");
+  }
+}
+
+function runTests() {
+  tests = [
+    ["no solutions", noSolutionsTestData],
+    ["few solutions", fewSolutionsTestData],
+    ["many solutions", manySolutionsTestData]
+  ]
+  for (i = 0; i < tests.length; i++) {
+    console.log("");
+    console.log("Running test" + (i+1) + "/" +
+                 tests.length + "(" + tests[i][0] + "):");
+    runTest(tests[i][1]);
+    console.log("Done with testing suite.");
+  }
+}
+
+export {
+  runTests
+}

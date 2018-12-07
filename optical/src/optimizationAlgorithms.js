@@ -113,12 +113,15 @@ function findNeighbor(assignment) {
 
     // Check for constraint violation
     // this find should never fail
-    task1 = assignment.events.find(e => e.name === assignment.halfHours[time1]);
-    task2 = assignment.events.find(e => e.name === assignment.halfHours[time2]);
+    // task1 = assignment.events.find(e => e.name === assignment.halfHours[time1]);
+    // task2 = assignment.events.find(e => e.name === assignment.halfHours[time2]);
+    task1 = assignment.halfHours[time1];
+    task2 = assignment.halfHours[time2];
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
       newAssignment = assignment;
-      newAssignment.halfHours[time1] = task2;
-      newAssignment.halfHours[time2] = task1;
+      // newAssignment.halfHours[time1] = task2.name;
+      // newAssignment.halfHours[time2] = task1.name;
+      swapTimes(newAssignment.halfHours, time1, time2);
       success = true;
     }
     reps += 1;
@@ -223,4 +226,8 @@ function simulatedAnnealing(assignment) {
     }
   }
   return assignment;
+}
+
+export {
+  naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing
 }

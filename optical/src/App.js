@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import * as gcalLoad from './gcalLoad.js';
 import './App.css';
 
+// Needed for testing
+import runTests from './tests.js';
+
 class App extends Component {
   loadGoogleCalendarApi() {
       // console.log('hello');
@@ -47,6 +50,8 @@ class App extends Component {
   }
 
   componentDidMount() {
+    // Run tests! Take this out if you don't want to run tests.
+    runTests();
     this.loadGoogleCalendarApi();
   }
 }

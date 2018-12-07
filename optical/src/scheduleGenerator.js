@@ -47,6 +47,9 @@ function solveCSP(today, tasksDesired, freeTimes) {
 	  			neededTimeBlocks = neededTimeBlocks - 1 
 	  			j = j + 1
 	  		}
+	  		else {
+	  			break
+	  		}
   		}
   	}
   	// Swap constraint violating variable with another with epsilon chance of random swap.

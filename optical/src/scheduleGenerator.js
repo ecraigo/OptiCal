@@ -3,12 +3,12 @@ import * as helpers from './helpers.js';
 
 var tasksDesired = [new objectPrototypes.Task('T1', 2, new objectPrototypes.TimeRange(0, 24)),
 					new objectPrototypes.Task('T2', 3, new objectPrototypes.TimeRange(0, 24)), 
-					new objectPrototypes.Task('T3', 1, new objectPrototypes.TimeRange(1, 2))]
+					new objectPrototypes.Task('T3', 1, new objectPrototypes.TimeRange(1, 3))]
 
 var freeTimes = [new objectPrototypes.TimeRange(1, 5),
-					new objectPrototypes.TimeRange(7, 12)]	
+					new objectPrototypes.TimeRange(7, 12)]
 
-var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)		
+var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
 
 var epsilon = 0.05
 
@@ -47,31 +47,46 @@ function solveCSP(today) {
   	// Swap constraint violating variable with another with epsilon chance of random swap.
   	console.log(timeVars)
   	var illegalVars = constraintsViolated(timeVars)
-  	while (illegalVars.length > 0){
+  	var iterations = 0
+  	while (illegalVars.length > 0 && iterations < 100){
   		var randomIndex1 = Math.floor(Math.random() * illegalVars.length)
+  		console.log(randomIndex1, "hello")
   		var probability = Math.random()
-  		var randomIndex2 = null
+  		var randomTimeVar = null
   		if (probability > epsilon) {
   			var task1TimeRange = timeVars[illegalVars[randomIndex1]].timeRange
-  			randomIndex2 = Math.floor((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start)
-  			while (randomIndex2 == randomIndex1){
-  				randomIndex2 = Math.floor((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start)
+  			randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
+  			console.log(randomTimeVar, "iter")
+  			var maxIter = 0
+  			while (randomTimeVar == randomIndex1 && maxIter < 100){
+  				randomTimeVar = Math.floor(((Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start) * 2)/2
+  				maxIter = maxIter + 1
+  				console.log(randomIndex1, randomTimeVar)
   			}
   		}
   		else {
-  			randomIndex2 = Math.floor(Math.random() * illegalVars.length)
-  			while (randomIndex2 == randomIndex1){
-  				randomIndex2 = Math.floor(Math.random() * illegalVars.length)
+  			randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
+  			var maxIters = 0
+  			while (randomTimeVar == randomIndex1 && maxIters < 100){
+  				randomTimeVar = Math.floor(Math.random() * illegalVars.length * 2)/2
+  				maxIters = maxIters + 1
   			}
   		}
-  		console.log(randomIndex1, randomIndex2)
-  		helpers.swapTimes(timeVars, randomIndex1, randomIndex2)
+  		console.log(randomIndex1, randomTimeVar, illegalVars)
+  		console.log(illegalVars[randomIndex1], randomTimeVar, illegalVars)
+  		helpers.swapTimes(timeVars, illegalVars[randomIndex1], randomTimeVar)
   		illegalVars = constraintsViolated(timeVars)
+  		iterations = iterations + 1
   	}
   	console.log(timeVars)
+  	var schedule = new objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
+  	schedule.halfHours = timeVars
+  	return schedule
 });
 }
 
+
+// Helper function to check for constraints and if there are, return them as a list.
 function constraintsViolated(assignments){
 	var violated = []
 	for (var k in assignments){
@@ -88,6 +103,7 @@ function constraintsViolated(assignments){
 	return violated
 }
 
+// For next time.
   	// var events = response.result.items;
   	// console.log(events)
   	// var variables = {}

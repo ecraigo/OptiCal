@@ -122,22 +122,19 @@ function runOptimizationAlgs(assignment) {
 
 function runTests() {
   // console.log(manySolutionsMockCSPSolution);
-  runTest(noSolutionsTestData);
-  // runTest(fewSolutionsTestData);
-  runTest(fewSolutionsTestData);
   // runOptimizationAlgs(manySolutionsMockCSPSolution);
-  // var tests = [
-  //   ["no solutions", noSolutionsTestData],
-  //   ["few solutions", fewSolutionsTestData],
-  //   ["many solutions", manySolutionsTestData]
-  // ]
-  // for (var i = 0; i < tests.length; i++) {
-  //   console.log("");
-  //   console.log("Running test " + (i+1) + "/" +
-  //                tests.length + " (" + tests[i][0] + "): ");
-  //   runTest(tests[i][1]);
-  //   console.log("Done with testing suite.");
-  // }
+  var tests = [
+    ["no solutions", noSolutionsTestData],
+    ["few solutions", fewSolutionsTestData],
+    ["many solutions", manySolutionsTestData]
+  ]
+  for (var i = 0; i < tests.length; i++) {
+    console.log("");
+    console.log("Running test " + (i+1) + "/" +
+                 tests.length + " (" + tests[i][0] + "): ");
+    runTest(tests[i][1]);
+    console.log("Done with testing suite.");
+  }
 }
 
 export {

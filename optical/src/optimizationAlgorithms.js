@@ -7,17 +7,17 @@ import {Event} from './objectPrototypes.js';
 import {swapTimes, inTaskTimeRange, randomKey} from './helpers.js';
 
 // Changeable weights for our utility function
-const CONSOLIDATION_WEIGHT = .1;
-const DAY_CENTER_WEIGHT = 0;
+const CONSOLIDATION_WEIGHT = 10;
+const DAY_CENTER_WEIGHT = 0.01;
 // Included so we have no divide-by-zero errors
-const UTILITY_EPSILON = 0.1;
+const UTILITY_EPSILON = 0.0001;
 // Used in epsilon-greedy hill climbing
-const OPTIMIZATION_EPSILON = 0.05;
+const OPTIMIZATION_EPSILON = 0.01;
 // Used in simulated annealing
 const INITIAL_TEMPERATURE = 1000;
 const ALPHA = 0.95;
 // Don't try anything too many times
-const MAX_REPS = 5000;
+const MAX_REPS = 10000;
 
 // Consolidate times on calendar day into "blocks" spent on a particular task,
 // and return these blocks.
@@ -101,6 +101,15 @@ function utility(halfHours) {
   return result;
 }
 
+// get task by name; deal with nulls also
+function getTask(tasks, taskName) {
+  if (taskName == null) {
+    return null;
+  } else {
+    return tasks.find(e => e.name === taskName);
+  }
+}
+
 // Find a neighboring calendar assignment by swapping two half-hour chunks and
 // make sure it doesn't violate any time ranges on tasks
 function findNeighbor(assignment) {
@@ -116,16 +125,13 @@ function findNeighbor(assignment) {
     }
 
     // Check for constraint violation
-    // this find should never fail
-    var task1 = assignment.tasks.find(e => e.name === assignment.halfHours[time1]);
-    var task2 = assignment.tasks.find(e => e.name === assignment.halfHours[time2]);
+    var task1 = getTask(assignment.tasks, assignment.halfHours[time1]);
+    var task2 = getTask(assignment.tasks, assignment.halfHours[time2]);
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
       newAssignment = JSON.parse(JSON.stringify(assignment));
-      newAssignment.halfHours[time1] = task2.name;
-      newAssignment.halfHours[time2] = task1.name;
+      newAssignment.halfHours[time1] = assignment.halfHours[time2];
+      newAssignment.halfHours[time2] = assignment.halfHours[time1];
       success = true;
-      // console.log("neighbor found?");
-      // console.log(newAssignment);
     }
     reps += 1;
   }

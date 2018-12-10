@@ -7,8 +7,8 @@ import {Event} from './objectPrototypes.js';
 import {swapTimes, inTaskTimeRange, randomKey} from './helpers.js';
 
 // Changeable weights for our utility function
-const CONSOLIDATION_WEIGHT = 10;
-const DAY_CENTER_WEIGHT = 0.01;
+const CONSOLIDATION_WEIGHT = 1;
+const DAY_CENTER_WEIGHT = 0.1;
 // Included so we have no divide-by-zero errors
 const UTILITY_EPSILON = 0.0001;
 // Used in epsilon-greedy hill climbing
@@ -96,8 +96,8 @@ function utility(halfHours) {
   // 3 pm, the center of most college students' working days
   var distanceSum = totalDistFromCenterTime(halfHours, 15);
 
-  var result = (CONSOLIDATION_WEIGHT * squaredBlockSum) /
-           (DAY_CENTER_WEIGHT * distanceSum + UTILITY_EPSILON);
+  var result = (CONSOLIDATION_WEIGHT * squaredBlockSum) -
+           (DAY_CENTER_WEIGHT * distanceSum);
   return result;
 }
 

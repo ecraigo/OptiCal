@@ -21,7 +21,7 @@ function Task(name, hours, timeRange) {
 }
 
 /* Object for single event in calendar. */
-function Event(name, startTime, length) {
+function CalendarEvent(name, startTime, length) {
   // Name of event
   this.name = name;
   // Starting time of event in same 24-hour format
@@ -50,5 +50,5 @@ function CalendarAssignment(tasks, freeTime) {
 }
 
 export {
-  TimeRange, Task, Event, CalendarAssignment
+  TimeRange, Task, CalendarEvent, CalendarAssignment
 }

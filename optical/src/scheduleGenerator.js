@@ -1,6 +1,7 @@
 import * as objectPrototypes from './objectPrototypes.js';
 import * as helpers from './helpers.js';
 
+// Uncomment for testing purposes.
 var tasksDesired = [new objectPrototypes.Task('T1', 2, new objectPrototypes.TimeRange(0, 24)),
 					new objectPrototypes.Task('T2', 3, new objectPrototypes.TimeRange(0, 24)),
 					new objectPrototypes.Task('T3', 1, new objectPrototypes.TimeRange(1, 3))]
@@ -8,48 +9,53 @@ var tasksDesired = [new objectPrototypes.Task('T1', 2, new objectPrototypes.Time
 var freeTimes = [new objectPrototypes.TimeRange(1, 5),
 					new objectPrototypes.TimeRange(7, 12)]
 
-var prelimCalendar = objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
-
+// Probability that we will swap any variable, whether it violates a constraint or not.
 var epsilon = 0.05
 
 // Maximum number of iterations loops will go through before giving up.
 var maxIterations = 1000
 
 function callSolveCSP(today){
-	solveCSP(today, tasksDesired, freeTimes);
+	solveCSP(tasksDesired, freeTimes);
 }
 
-
+/* Function that solves a CSP given a list of Tasks desired by the user and a list 
+of the user's free times in the form of TimeRanges. Outputs a Calendar Assignment 
+which includes the CSP's Task constraints, free time constraints, and a solution 
+if there exists one. A solution or goal state is a when all constraints are satisfied,
+i.e. all desired tasks are scheduled in the time requested, if any, and the length
+requested. If no solution exists, i.e. when the user wants to schedule 13 hours of 
+Tasks when he/she only has 12 hours of free time available, the schedule outputted
+in the resulting Calendar Assignment is undefined. */
 function solveCSP(tasksDesired, freeTimes) {
+	// Dictionary mapping time variables to their Task assignment.
 	var timeVars = {}
+	// Calendar Assignment to return initialized with the Task constraints and free times.
 	var schedule = new objectPrototypes.CalendarAssignment(tasksDesired, freeTimes)
-	var totalNeededTime = 0
-	// Initialize free time variables by the half hour.
+	// Initialize the dictionary of free time variables by the half hour.
 	for (var i = 0; i < freeTimes.length; i++){
 		var currentFreeBlock = freeTimes[i].start
-		totalNeededTime += (freeTimes[i].end - freeTimes[i].start) * 2.0
 		while (currentFreeBlock < freeTimes[i].end){
 			timeVars[currentFreeBlock] = null
 			currentFreeBlock = currentFreeBlock + 0.5
 		}
 	}
-	// Initialize with assignment of desired tasks to free time.
+	// Arbitrarily assign Tasks to free time by iterating through taskDesired and dictionary.
 	var timesKeys = Object.keys(timeVars)
-	// console.log(timeVars, timesKeys.length, timesKeys, "initialization")
 	var j = 0
 	for (var k = 0; k < tasksDesired.length; k++){
 		var currentTask = tasksDesired[k]
 		var neededTimeBlocks = currentTask.hours * 2
 		while (neededTimeBlocks > 0)
 		{
-			// If there are still open time blocks, assign next open block to current task.
+			// If there are still unassigned time blocks, assign next available block to current Task.
 			if (j < timesKeys.length) 
 			{
 				timeVars[timesKeys[j]] = currentTask
   				neededTimeBlocks = neededTimeBlocks - 1
   				j = j + 1
   			}
-	  		// If there are no more time blocks, meaning a valid assignment is impossible, return.
+	  		// If there are no more available time blocks then a valid assignment is impossible therefore return.
 	  		else 
 	  		{	
 	  			return;
@@ -57,12 +63,9 @@ function solveCSP(tasksDesired, freeTimes) {
 		}
 	}
 	// Swap constraint violating variable with another with epsilon chance of random swap.
-	
-	// console.log(timeVars, timesKeys.length, timesKeys, Object.values(timeVars), "beforebeginning")
+	// Keep swapping until we run out of violated variables or have gone through max number of iterations.
 	var illegalVars = constraintsViolated(timeVars)
 	var iterations = 0
-	// console.log(timeVars, timesKeys.length, timesKeys, Object.values(timeVars), "beginning")
-	// Keep swapping until we run out of violated variables or have gone through max number of iterations.
 	while (illegalVars.length > 0 && iterations < maxIterations)
 	{
 		// Find a random index within illegal variables to be first time block to swap.
@@ -82,10 +85,9 @@ function solveCSP(tasksDesired, freeTimes) {
 				randomTimeVar2Math = (Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start
 				randomTimeVar2 = Math.floor(randomTimeVar2Math * 2)/2
 				iterations2 = iterations2 + 1
-				// console.log(randomIndex1, randomTimeVar2)
 			}
 		}
-		// With a probability epsilon that we swap with a random free time.
+		// With a probability of epsilon we swap first time var's assignment with a random free time's assignment.
 		else 
 		{
 			randomTimeVar2 = Math.floor(Math.random() * timesKeys.length * 2)/2
@@ -96,19 +98,18 @@ function solveCSP(tasksDesired, freeTimes) {
 				iterations3 = iterations3 + 1
 			}
 		}
-		// console.log(timeVars, iterations)
-		// console.log(illegalVars[randomIndex1], randomTimeVar2, illegalVars)
-		// console.log(timeVars, "before", illegalVars[randomIndex1], randomTimeVar2)
+		// Swap variable assignments.
 		helpers.swapTimes(timeVars, illegalVars[randomIndex1], randomTimeVar2.toString())
-		// console.log(timeVars, "after")
+		// Update violated contraints and iteration number.
 		illegalVars = constraintsViolated(timeVars)
 		iterations = iterations + 1
 	}
-	// console.log(timeVars)
+	// If we reached the max number of iterations then that means we did not find a valid assignment.
 	if (iterations == 1000) 
 	{
 		return;
 	}
+	// Otherwise, we found a valid assignment, therefore return.
 	else
 	{
 		schedule.halfHours = convertFormat(timeVars)
@@ -189,6 +190,7 @@ function solveCSP(tasksDesired, freeTimes) {
 // });
 // }
 
+// Helper function to convert dictionary of variable assignments to format for optimization algos.
 function convertFormat(assignments)
 {
 	for (var time in assignments)
@@ -202,7 +204,7 @@ function convertFormat(assignments)
 }
 
 
-// Helper function to check for constraints and if there are, return them as a list.
+// Helper function to check for constraints and if there are, return as a list.
 function constraintsViolated(assignments)
 {
 	var violated = []
@@ -210,14 +212,12 @@ function constraintsViolated(assignments)
 		var task = assignments[k]
 		if (task != null) {
 			var allowedTime = task.timeRange
-			// console.log(allowedTime, k)
 			if (k < allowedTime.start || k > allowedTime.end)
 			{
 				violated.push(k)
 			}
 		}
 	}
-	// console.log(violated)
 	return violated
 }
 

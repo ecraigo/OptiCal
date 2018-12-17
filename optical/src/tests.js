@@ -4,10 +4,11 @@ import {solveCSP} from './scheduleGenerator.js';
 import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
   './optimizationAlgorithms.js';
 
-var T1 = new Task("T1", 2, new TimeRange(9, 15));
-var T2 = new Task("T2", 1.5, new TimeRange(11.5, 14));
-var T3 = new Task("T3", 4, new TimeRange(0, 24));
-var T4 = new Task("T4", 3.5, new TimeRange(19, 23));
+// Uncomment for testing.
+// var T1 = new Task("T1", 2, new TimeRange(9, 15));
+// var T2 = new Task("T2", 1.5, new TimeRange(11.5, 14));
+// var T3 = new Task("T3", 4, new TimeRange(0, 24));
+// var T4 = new Task("T4", 3.5, new TimeRange(19, 23));
 
 // No solutions are possible with these constraints.
 var noSolutionsTestData = {

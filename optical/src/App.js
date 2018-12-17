@@ -8,7 +8,6 @@ import {runTests} from './tests.js';
 
 class App extends Component {
   loadGoogleCalendarApi() {
-      // console.log('hello');
       const script = document.createElement("script");
       script.src = "https://apis.google.com/js/api.js";
 
@@ -28,30 +27,25 @@ class App extends Component {
         <button id="signout_button">Sign Out</button>
 
         <pre id="content"></pre>
+        <p>Task Names:</p>
+        <input id="task_names" required/>
+        <p>Task Required Hours:</p>
+        <input id="task_req_hours" required/>  
+        <p>Task Required Time Ranges:</p>
+        <input id="task_time_ranges" required/>        
+        <p>Free Times:</p>
+        <input id="freetimes"/>
+        <p> </p>
+        <input id ="submit_button" type="submit" value="Submit" />
 
-        <form>
-          <div className="events">
-            <label>
-             Events:
-              <input type="text" id="events" />
-            </label>
-          </div>
-          <div className="times">
-            <label>
-              Times:
-              <input type="text" id="hours" />
-            </label>
-          </div>
-          <input id ="submitButton" type="submit" value="Submit" />
-        </form>
-        <pre id="schedules"></pre>
+        <p id = "results"></p>
       </div>
     );
   }
 
   componentDidMount() {
     // Run tests! Take this out if you don't want to run tests.
-    runTests();
+    // runTests();
     this.loadGoogleCalendarApi();
   }
 }

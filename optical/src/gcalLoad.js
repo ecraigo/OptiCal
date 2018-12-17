@@ -1,5 +1,8 @@
 import secrets from './secrets.json'
-import * as scheduleGenerator from './scheduleGenerator.js';
+import {TimeRange, Task, CalendarAssignment} from './objectPrototypes.js';
+import {solveCSP} from './scheduleGenerator.js';
+import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
+  './optimizationAlgorithms.js';
 
 function getClientId() {
   return secrets["client_id"];
@@ -22,6 +25,12 @@ var gapi = undefined;
 var sourceDocument = undefined;
 var authorizeButton = undefined;
 var signoutButton = undefined;
+var submitButton = undefined;
+var taskNames = undefined;
+var taskReqHours = undefined;
+var taskTimeRanges = undefined;
+var freeTimes = undefined;
+var results = undefined;
 
 /**
  *  On load, called to load the auth2 library and API client library.
@@ -31,6 +40,7 @@ function handleClientLoad(sourceDoc, api) {
   gapi = api;
   authorizeButton = sourceDocument.getElementById('authorize_button');
   signoutButton = sourceDocument.getElementById('signout_button');
+  submitButton = sourceDocument.getElementById('submit_button')
   gapi.load('client:auth2', initClient);
 }
 
@@ -52,9 +62,96 @@ function initClient() {
     updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
     authorizeButton.onclick = handleAuthClick;
     signoutButton.onclick = handleSignoutClick;
+    submitButton.onclick = handleSubmitClick;
   }, function(error) {
     appendPre(JSON.stringify(error, null, 2));
   });
+}
+
+/**
+ *  Called when user submits CSP inputs to generate schedules and
+ optimize with optimization algos.
+ */
+function handleSubmitClick(event) {
+  taskNames = sourceDocument.getElementById('task_names')
+  taskReqHours = sourceDocument.getElementById('task_req_hours')
+  taskTimeRanges = sourceDocument.getElementById('task_time_ranges')
+  freeTimes = sourceDocument.getElementById('freetimes')
+  results = sourceDocument.getElementById('results')
+  // Process task inputs into correct form for algos.
+  taskNames = taskNames.value.split(',')
+  taskReqHours = taskReqHours.value.split(',')
+  taskTimeRanges = taskTimeRanges.value.split(',')
+  if (taskNames.length == taskReqHours.length && taskNames.length == taskTimeRanges.length) {
+    var tasks = []
+    for (var i = 0; i < taskNames.length; i++){
+      if (taskTimeRanges[i] == "None") {
+        taskTimeRanges[i] = new TimeRange(0, 24)
+      }
+      else {
+        var processed = taskTimeRanges[i].split('-')
+        taskTimeRanges[i] = new TimeRange(parseFloat(processed[0]), parseFloat(processed[1]))
+      }
+      var newTask = new Task(taskNames[i], parseFloat(taskReqHours[i]), taskTimeRanges[i])
+      tasks.push(newTask)
+    }
+  }
+  else {
+    window.alert("Please try again.")
+  }
+  // Process free time inputs.
+  freeTimes = freeTimes.value.split(',')
+  for (var j = 0; j < freeTimes.length; j++){
+    var processed = freeTimes[j].split('-')
+    freeTimes[j] = new TimeRange(parseFloat(processed[0]), parseFloat(processed[1]))
+  }
+  // Run CSP solver on inputted data. 
+  var schedules = []
+  var CSPschedule = solveCSP(tasks, freeTimes)
+  schedules.push(CSPschedule)
+  // Run optimization algos on CSP generated schedule.
+  if (CSPschedule === undefined) {
+    window.alert("No valid schedules were found.")
+  }
+  else {
+    schedules.push(naiveHillClimbing(CSPschedule))
+    schedules.push(epsilonGreedyHillClimbing(CSPschedule))
+    schedules.push(simulatedAnnealing(CSPschedule))
+    results.innerHTML = convertFormatToPrint(schedules)
+  }
+}
+
+/**
+ *  Called to convert list of generated schedules to format that 
+ is readable and user friendly.
+ */
+function convertFormatToPrint(lstAssignments){
+  var retString = ""
+  console.log(lstAssignments.length)
+  for (var i = 0; i < lstAssignments.length; i++){
+    retString = retString + ("Generated Schedule " + (i + 1) + ": <br>")
+    retString = retString + convertAssignment(lstAssignments[i])
+  }
+  retString += "Thanks and glad to be of service!"
+  return retString
+}
+
+/**
+ *  Helper function to convert individual generated schedules to 
+ format that is readable and user friendly.
+ */
+function convertAssignment(schedule){
+  var retString = ""
+  var timeKeys = Object.keys(schedule.halfHours).sort(function(a, b) {return a-b;})
+  console.log(schedule.halfHours, timeKeys)
+  for (var i = 0; i < timeKeys.length; i++){
+    var currentTime = timeKeys[i]
+    if (schedule.halfHours[currentTime] != null && schedule.halfHours[currentTime] != undefined){
+      retString = retString + (currentTime + " - " + (parseInt(currentTime) + 0.5) + 
+        ": " + schedule.halfHours[currentTime] + ". <br>")
+    }
+  }
+  return (retString)
 }
 
 /**
@@ -64,8 +161,8 @@ function initClient() {
 function updateSigninStatus(isSignedIn) {
   if (isSignedIn) {
     var today = new Date()
-    listUpcomingEvents(today);
-    scheduleGenerator.callSolveCSP(today)
+    listUpcomingEvents(today)
+    // scheduleGenerator.callSolveCSP(today)
   } else {
   }
 }
@@ -130,6 +227,6 @@ function listUpcomingEvents(today) {
 
 export {
   getClientId, getApiKey,
-  handleClientLoad, initClient, updateSigninStatus,
+  handleSubmitClick, handleClientLoad, initClient, updateSigninStatus,
   handleAuthClick, handleSignoutClick, appendPre, listUpcomingEvents
  };

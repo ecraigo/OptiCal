@@ -147,7 +147,7 @@ function convertAssignment(schedule){
   for (var i = 0; i < timeKeys.length; i++){
     var currentTime = timeKeys[i]
     if (schedule.halfHours[currentTime] != null && schedule.halfHours[currentTime] != undefined){
-      retString = retString + (currentTime + " - " + (parseInt(currentTime) + 0.5) + 
+      retString = retString + (currentTime + " - " + (parseFloat(currentTime) + 0.5) + 
         ": " + schedule.halfHours[currentTime] + ". <br>")
     }
   }

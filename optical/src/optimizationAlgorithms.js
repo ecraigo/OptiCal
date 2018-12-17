@@ -3,69 +3,20 @@
    Currently the utility function is calculated to prefer longer periods of time
    spent on individual tasks rather than too much switching, and also to prefer
    schedules that have events concentrated near 3 pm. */
-import {Event} from './objectPrototypes.js';
-import {swapTimes, inTaskTimeRange, randomKey} from './helpers.js';
+import {swapTimes, inTaskTimeRange, randomKey, getBlocks} from './helpers.js';
 
 // Changeable weights for our utility function
 const CONSOLIDATION_WEIGHT = 1;
+const SIMILAR_BLOCK_SIZE_WEIGHT = 0.1;
+const FEW_BLOCKS_WEIGHT = 10;
 const DAY_CENTER_WEIGHT = 0.1;
-// Included so we have no divide-by-zero errors
-const UTILITY_EPSILON = 0.0001;
 // Used in epsilon-greedy hill climbing
 const OPTIMIZATION_EPSILON = 0.01;
 // Used in simulated annealing
-const INITIAL_TEMPERATURE = 1000;
-const ALPHA = 0.95;
+const INITIAL_TEMPERATURE = 100000;
+const ALPHA = 0.995;
 // Don't try anything too many times
 const MAX_REPS = 10000;
-
-// Consolidate times on calendar day into "blocks" spent on a particular task,
-// and return these blocks.
-function getBlocks(halfHours) {
-  // deep copy
-  halfHours = JSON.parse(JSON.stringify(halfHours));
-  var blocks = [];
-  var currentTask = null;
-  var nextTask = null;
-  var currentStartingTime = 0;
-  var timeAmount = 0;
-  var t = 0;
-
-  // Assign null to unassigned hours, to avoid unreadable code below
-  while (t < 24) {
-    if (!(t.toString() in halfHours)) {
-      halfHours[t] = null;
-    }
-    t += 0.5
-  }
-
-  t = 0;
-  while (t < 24) {
-    nextTask = halfHours[t];
-    // Assign new block
-    if (nextTask !== currentTask) {
-      if (currentTask !== null) {
-        blocks.push(new Event(currentTask, currentStartingTime, timeAmount));
-      }
-      // Reset
-      currentTask = nextTask;
-      currentStartingTime = t;
-      timeAmount = 0.5;
-
-    // Add time to block if not free time
-    } else if (currentTask !== null) {
-      timeAmount += 0.5;
-    }
-
-    t += 0.5;
-  }
-  // Add ending block
-  if (currentTask !== null) {
-    blocks.push(new Event(currentTask, currentStartingTime, timeAmount));
-  }
-
-  return blocks;
-}
 
 // Sum up distances of work chunks from a specific time in the day in an asst
 function totalDistFromCenterTime(halfHours, centerTime) {
@@ -84,20 +35,30 @@ function totalDistFromCenterTime(halfHours, centerTime) {
 
 // Utility function for a particular calendar assignment.
 function utility(halfHours) {
-  // Sum the squares of lengths of blocks in the assignment to promote longer
+  // Sum the lengths of blocks in the assignment to promote longer
   // blocks of work on a single task
   var blocks = getBlocks(halfHours);
+  // Subtract the number of blocks, weighted by a different factor; we want to
+  // promote few blocks per day
+  var blockCount = blocks.length;
   // console.log(blocks);
-  var squaredBlockSum = blocks.map(event => Math.pow(event.length, 2))
-                              .reduce((a, b) => a + b, 0);
+  var blockLengths = blocks.map(event => event.length);
+  var blockAverageLength = blockLengths.reduce((a, b) => a + b, 0) / blockCount;
+  var blockVarianceSum = blockLengths.map(len => Math.pow
+                                         (len - blockAverageLength, 2))
+                                     .reduce((a, b) => a + b, 0);
+  var squaredBlockSum = blockLengths.map(len => Math.pow(len, 2))
+                                    .reduce((a, b) => a + b, 0);
   // console.log(squaredBlockSum);
 
   // Divide this by the total distance of all half-hour blocks of work from
   // 3 pm, the center of most college students' working days
   var distanceSum = totalDistFromCenterTime(halfHours, 15);
 
-  var result = (CONSOLIDATION_WEIGHT * squaredBlockSum) -
-           (DAY_CENTER_WEIGHT * distanceSum);
+  var result = (CONSOLIDATION_WEIGHT * squaredBlockSum)
+                - (SIMILAR_BLOCK_SIZE_WEIGHT * blockVarianceSum)
+                - (FEW_BLOCKS_WEIGHT * blockCount)
+                - (DAY_CENTER_WEIGHT * distanceSum);
   return result;
 }
 
@@ -154,13 +115,13 @@ function naiveHillClimbing(assignment) {
     // console.log("neighboring utility: " + utility(neighbor.halfHours));
 
     if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
-      console.log("we found something better!!!!");
       assignment = JSON.parse(JSON.stringify(neighbor));
       reps = 0;
     } else {
       reps += 1;
     }
   }
+  // return [assignment, utility(assignment.halfHours)];
   return assignment;
 }
 
@@ -168,7 +129,8 @@ function naiveHillClimbing(assignment) {
 function epsilonGreedyHillClimbing(assignment) {
   var reps = 0;
   var rnd;
-  var max_util = 0;
+  var maxUtil = null;
+  var bestAssignment = null;
 
   while (reps < MAX_REPS) {
     var neighbor = findNeighbor(assignment);
@@ -188,21 +150,25 @@ function epsilonGreedyHillClimbing(assignment) {
 
     // If we improved, set reps to 0; otherwise, add 1
     var assignmentUtility = utility(assignment.halfHours);
-    if (assignmentUtility > max_util) {
-      max_util = assignmentUtility;
+    if (maxUtil === null || assignmentUtility > maxUtil) {
+      maxUtil = assignmentUtility;
+      bestAssignment = assignment;
       reps = 0;
     } else {
       reps += 1;
     }
   }
-  return assignment;
+  // Return the best-quality assignment we could find
+  // return [bestAssignment, maxUtil];
+  return bestAssignment;
 }
 
 // Simulated annealing algorithm
 function simulatedAnnealing(assignment) {
   var reps = 0;
   var temperature = INITIAL_TEMPERATURE;
-  var max_util = 0;
+  var maxUtil = null;
+  var bestAssignment = null;
   var rnd;
 
   while (reps < MAX_REPS) {
@@ -217,14 +183,13 @@ function simulatedAnnealing(assignment) {
 
     // If better immediately accept
     if (neighborUtility > assignmentUtility) {
-      console.log("we found something better!!!!");
       assignment = JSON.parse(JSON.stringify(neighbor));
     } else {
       // Otherwise accept with temperature-based probability
-      var probability = Math.exp(-(neighborUtility - assignmentUtility)
+      var probability = Math.exp(neighborUtility - assignmentUtility
                     / temperature);
       rnd = Math.random()
-      if (probability <= rnd) {
+      if (rnd <= probability) {
         assignment = JSON.parse(JSON.stringify(neighbor));
       }
     }
@@ -233,16 +198,20 @@ function simulatedAnnealing(assignment) {
     temperature *= ALPHA;
 
     assignmentUtility = utility(assignment.halfHours);
-    if (assignmentUtility > max_util) {
-      max_util = assignmentUtility;
+    if (maxUtil === null || assignmentUtility > maxUtil) {
+      // console.log("better is", assignmentUtility);
+      maxUtil = assignmentUtility;
+      bestAssignment = assignment;
       reps = 0;
     } else {
       reps += 1;
     }
   }
-  return assignment;
+  // return [bestAssignment, maxUtil];
+  return bestAssignment;
 }
 
 export {
-  naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing
+  naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing,
+  utility
 }

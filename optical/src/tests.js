@@ -1,7 +1,8 @@
 /* Mock data to test our algorithms. */
 import {TimeRange, Task} from './objectPrototypes.js';
 import {solveCSP} from './scheduleGenerator.js';
-import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
+import {naiveHillClimbing, epsilonGreedyHillClimbing,
+        simulatedAnnealing, utility} from
   './optimizationAlgorithms.js';
 
 // Uncomment for testing.
@@ -88,21 +89,38 @@ var manySolutionsMockCSPSolution = {
   }
 }
 
+// Time the length it takes for one of these optimization algorithms to run
+// in milliseconds
+function timeTest(fn, arg) {
+  var time_start = performance.now();
+  var result = fn(arg);
+  var time_finish = performance.now();
+  return [result, time_finish - time_start];
+}
+
 function runTest(testData) {
   console.log("");
   console.log("Beginning test.");
+
+  var time_start = performance.now();
   var assignment = solveCSP(testData.tasks, testData.freeTime);
+  var time_finish = performance.now();
+  var time_taken = time_finish - time_start;
   if (assignment === undefined) {
     console.log("Failure to reach solution with CSP solver.");
   } else {
     console.log("CSP solver success. Here's the solution reached:");
+    // console.log(assignment, utility(assignment.halfHours), time_taken);
     console.log(assignment);
     console.log("Next let's run optimization algorithms.");
     console.log("Here's naïve hill-climbing:");
+    // console.log(timeTest(naiveHillClimbing, assignment));
     console.log(naiveHillClimbing(assignment));
     console.log("Here's epsilon-greedy hill-climbing:");
+    // console.log(timeTest(epsilonGreedyHillClimbing, assignment));
     console.log(epsilonGreedyHillClimbing(assignment));
     console.log("Finally, here's simulated annealing:");
+    // console.log(timeTest(simulatedAnnealing, assignment));
     console.log(simulatedAnnealing(assignment));
     console.log("Great job - it all worked!");
   }

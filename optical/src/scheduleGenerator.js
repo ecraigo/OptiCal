@@ -15,12 +15,12 @@ var epsilon = 0.05
 // Maximum number of iterations loops will go through before giving up.
 var maxIterations = 1000
 
-/* Function that solves a CSP given a list of Tasks desired by the user and a list 
-of the user's free times in the form of TimeRanges. Outputs a Calendar Assignment 
-which includes the CSP's Task constraints, free time constraints, and a solution 
+/* Function that solves a CSP given a list of Tasks desired by the user and a list
+of the user's free times in the form of TimeRanges. Outputs a Calendar Assignment
+which includes the CSP's Task constraints, free time constraints, and a solution
 if there exists one. A solution or goal state is a when all constraints are satisfied,
 i.e. all desired tasks are scheduled in the time requested, if any, and the length
-requested. If no solution exists, i.e. when the user wants to schedule 13 hours of 
+requested. If no solution exists, i.e. when the user wants to schedule 13 hours of
 Tasks when he/she only has 12 hours of free time available, the schedule outputted
 in the resulting Calendar Assignment is undefined. */
 function solveCSP(tasksDesired, freeTimes) {
@@ -50,7 +50,7 @@ function solveCSP(tasksDesired, freeTimes) {
   				j = j + 1
   			}
 	  		// If there are no more available time blocks then a valid assignment is impossible therefore return.
-	  		else {	
+	  		else {
 	  			return;
 	  		}
 		}
@@ -71,7 +71,7 @@ function solveCSP(tasksDesired, freeTimes) {
 			var randomTimeVar2Math = (Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start
 			randomTimeVar2 = Math.floor(randomTimeVar2Math * 2)/2
 			var iterations2 = 0
-			while ((!(randomTimeVar2 in timeVars) || randomTimeVar2 == randomTimeVar1) && iterations2 < 100) {
+			while ((!(randomTimeVar2 in timeVars) || randomTimeVar2 === randomTimeVar1) && iterations2 < 100) {
 				randomTimeVar2Math = (Math.random() * (task1TimeRange.end - task1TimeRange.start)) + task1TimeRange.start
 				randomTimeVar2 = Math.floor(randomTimeVar2Math * 2)/2
 				iterations2 = iterations2 + 1
@@ -81,7 +81,7 @@ function solveCSP(tasksDesired, freeTimes) {
 		else {
 			randomTimeVar2 = Math.floor(Math.random() * timesKeys.length * 2)/2
 			var iterations3 = 0
-			while ((!(randomTimeVar2 in timeVars) || randomTimeVar2 == randomTimeVar1) && iterations3 < 100) {
+			while ((!(randomTimeVar2 in timeVars) || randomTimeVar2 === randomTimeVar1) && iterations3 < 100) {
 				randomTimeVar2 = Math.floor(Math.random() * timesKeys.length * 2)/2
 				iterations3 = iterations3 + 1
 			}
@@ -93,7 +93,7 @@ function solveCSP(tasksDesired, freeTimes) {
 		iterations = iterations + 1
 	}
 	// If we reached the max number of iterations then that means we did not find a valid assignment.
-	if (iterations == maxIterations) {
+	if (iterations === maxIterations) {
 		return;
 	}
 	// Otherwise, we found a valid assignment, therefore return.
@@ -106,8 +106,12 @@ function solveCSP(tasksDesired, freeTimes) {
 // Helper function to convert dictionary of variable assignments to format for optimization algos.
 function convertFormat(assignments){
 	for (var time in assignments) {
-		if (assignments[time] != undefined) {
-			assignments[time] = assignments[time].name
+		if (assignments[time] !== undefined) {
+			if (assignments[time] === null) {
+				assignments[time] = null
+			} else {
+				assignments[time] = assignments[time].name
+			}
 		}
 	}
 	return assignments

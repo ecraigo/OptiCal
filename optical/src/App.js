@@ -13,12 +13,12 @@ limitations under the License.
 */
 
 import React, { Component } from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import * as gcalLoad from './gcalLoad.js';
 import './App.css';
 
 // Needed for testing
-import {runTests} from './tests.js';
+// import {runTests} from './tests.js';
 
 class App extends Component {
   loadGoogleCalendarApi() {
@@ -26,7 +26,7 @@ class App extends Component {
       script.src = "https://apis.google.com/js/api.js";
 
       script.onload = () => {
-        console.log(window.gapi);
+        // console.log(window.gapi);
         gcalLoad.handleClientLoad(document, window.gapi);
       }
       document.body.appendChild(script);
@@ -44,9 +44,9 @@ class App extends Component {
         <p>Task Names:</p>
         <input id="task_names" required/>
         <p>Task Required Hours:</p>
-        <input id="task_req_hours" required/>  
-        <p>Task Required Time Ranges:</p>
-        <input id="task_time_ranges" required/>        
+        <input id="task_req_hours" required/>
+        <p>Task Allowed Time Ranges:</p>
+        <input id="task_time_ranges" required/>
         <p>Free Times:</p>
         <input id="freetimes"/>
         <p> </p>

@@ -3,7 +3,7 @@
    Currently the utility function is calculated to prefer longer periods of time
    spent on individual tasks rather than too much switching, and also to prefer
    schedules that have events concentrated near 3 pm. */
-import {swapTimes, inTaskTimeRange, randomKey, getBlocks} from './helpers.js';
+import {inTaskTimeRange, randomKey, getBlocks} from './helpers.js';
 
 // Changeable weights for our utility function
 const CONSOLIDATION_WEIGHT = 1;
@@ -44,8 +44,8 @@ function utility(halfHours) {
   // console.log(blocks);
   var blockLengths = blocks.map(event => event.length);
   var blockAverageLength = blockLengths.reduce((a, b) => a + b, 0) / blockCount;
-  var blockVarianceSum = blockLengths.map(len => Math.pow
-                                         (len - blockAverageLength, 2))
+  var blockVarianceSum = blockLengths.map(len =>
+                                      Math.pow(len - blockAverageLength, 2))
                                      .reduce((a, b) => a + b, 0);
   var squaredBlockSum = blockLengths.map(len => Math.pow(len, 2))
                                     .reduce((a, b) => a + b, 0);
@@ -88,6 +88,7 @@ function findNeighbor(assignment) {
     // Check for constraint violation
     var task1 = getTask(assignment.tasks, assignment.halfHours[time1]);
     var task2 = getTask(assignment.tasks, assignment.halfHours[time2]);
+    // Swap must be valid for both new time slots
     if (inTaskTimeRange(task1, time2) && inTaskTimeRange(task2, time1)) {
       newAssignment = JSON.parse(JSON.stringify(assignment));
       newAssignment.halfHours[time1] = assignment.halfHours[time2];
@@ -111,9 +112,7 @@ function naiveHillClimbing(assignment) {
       break;
     }
 
-    // console.log("original utility: " + utility(assignment.halfHours));
-    // console.log("neighboring utility: " + utility(neighbor.halfHours));
-
+    // Take the best of the current and the neighboring assignment
     if (utility(neighbor.halfHours) > utility(assignment.halfHours)) {
       assignment = JSON.parse(JSON.stringify(neighbor));
       reps = 0;
@@ -121,7 +120,6 @@ function naiveHillClimbing(assignment) {
       reps += 1;
     }
   }
-  // return [assignment, utility(assignment.halfHours)];
   return assignment;
 }
 
@@ -159,7 +157,6 @@ function epsilonGreedyHillClimbing(assignment) {
     }
   }
   // Return the best-quality assignment we could find
-  // return [bestAssignment, maxUtil];
   return bestAssignment;
 }
 
@@ -196,10 +193,10 @@ function simulatedAnnealing(assignment) {
 
     // Decrease temperature
     temperature *= ALPHA;
-
     assignmentUtility = utility(assignment.halfHours);
+
+    // The best assignment propagates up
     if (maxUtil === null || assignmentUtility > maxUtil) {
-      // console.log("better is", assignmentUtility);
       maxUtil = assignmentUtility;
       bestAssignment = assignment;
       reps = 0;
@@ -207,7 +204,6 @@ function simulatedAnnealing(assignment) {
       reps += 1;
     }
   }
-  // return [bestAssignment, maxUtil];
   return bestAssignment;
 }
 

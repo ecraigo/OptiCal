@@ -1,3 +1,10 @@
+/** Much of this display code is taken from example code on the Google
+  * Calendar API website and edited to be runnable in React. Heavily
+  * customized functions that implement functionality specific to our
+  * project are marked as "CUSTOM CODE" in this file, to keep things
+  * straight.
+  */
+
 /*
 Google Calendar API components of code is under:
 Copyright 2018 Google LLC
@@ -13,10 +20,11 @@ limitations under the License.
 */
 
 import secrets from './secrets.json'
-import {TimeRange, Task, CalendarAssignment} from './objectPrototypes.js';
+import {TimeRange, Task} from './objectPrototypes.js';
 import {solveCSP} from './scheduleGenerator.js';
 import {naiveHillClimbing, epsilonGreedyHillClimbing, simulatedAnnealing} from
   './optimizationAlgorithms.js';
+import {getBlocks} from './helpers.js';
 
 function getClientId() {
   return secrets["client_id"];
@@ -83,6 +91,7 @@ function initClient() {
 }
 
 /**
+ *  CUSTOM CODE
  *  Called when user submits CSP inputs to generate schedules and
  optimize with optimization algos.
  */
@@ -93,17 +102,18 @@ function handleSubmitClick(event) {
   freeTimes = sourceDocument.getElementById('freetimes')
   results = sourceDocument.getElementById('results')
   // Process task inputs into correct form for algos.
+  var processed
   taskNames = taskNames.value.split(',')
   taskReqHours = taskReqHours.value.split(',')
   taskTimeRanges = taskTimeRanges.value.split(',')
-  if (taskNames.length == taskReqHours.length && taskNames.length == taskTimeRanges.length) {
+  if (taskNames.length === taskReqHours.length && taskNames.length === taskTimeRanges.length) {
     var tasks = []
     for (var i = 0; i < taskNames.length; i++){
-      if (taskTimeRanges[i] == "None") {
+      if (taskTimeRanges[i] === "None") {
         taskTimeRanges[i] = new TimeRange(0, 24)
       }
       else {
-        var processed = taskTimeRanges[i].split('-')
+        processed = taskTimeRanges[i].split('-')
         taskTimeRanges[i] = new TimeRange(parseFloat(processed[0]), parseFloat(processed[1]))
       }
       var newTask = new Task(taskNames[i], parseFloat(taskReqHours[i]), taskTimeRanges[i])
@@ -116,10 +126,10 @@ function handleSubmitClick(event) {
   // Process free time inputs.
   freeTimes = freeTimes.value.split(',')
   for (var j = 0; j < freeTimes.length; j++){
-    var processed = freeTimes[j].split('-')
+    processed = freeTimes[j].split('-')
     freeTimes[j] = new TimeRange(parseFloat(processed[0]), parseFloat(processed[1]))
   }
-  // Run CSP solver on inputted data. 
+  // Run CSP solver on inputted data.
   var schedules = []
   var CSPschedule = solveCSP(tasks, freeTimes)
   schedules.push(CSPschedule)
@@ -136,36 +146,55 @@ function handleSubmitClick(event) {
 }
 
 /**
- *  Called to convert list of generated schedules to format that 
+ *  CUSTOM CODE
+ *  Called to convert list of generated schedules to format that
  is readable and user friendly.
  */
-function convertFormatToPrint(lstAssignments){
-  var retString = ""
-  console.log(lstAssignments.length)
-  for (var i = 0; i < lstAssignments.length; i++){
-    retString = retString + ("Generated Schedule " + (i + 1) + ": <br>")
-    retString = retString + convertAssignment(lstAssignments[i])
-  }
-  retString += "Thanks and glad to be of service!"
-  return retString
+function convertFormatToPrint(lstAssignments) {
+  var retString = "Here are four schedules of events you can place in your " +
+                  "calendar that fulfill your daily requirements, generated " +
+                  "by four different algorithms surveyed in this project. " +
+                  "For each event list, the associated algorithm(s) is/are " +
+                  "specified.<br /><br /><br />";
+
+  retString += "Schedule 1 – CSP solver alone:<br />";
+  retString += convertAssignment(lstAssignments[0]);
+  retString += "<br />";
+
+  retString += "Schedule 2 – CSP solver plus naïve hill-climbing:<br />";
+  retString += convertAssignment(lstAssignments[1]);
+  retString += "<br />";
+
+  retString += "Schedule 3 – CSP solver plus ɛ-greedy hill-climbing:<br />";
+  retString += convertAssignment(lstAssignments[2]);
+  retString += "<br />";
+
+  retString += "Schedule 4 – CSP solver plus simulated annealing:<br />";
+  retString += convertAssignment(lstAssignments[3]);
+  retString += "<br /><br />";
+
+  retString += "Thanks and glad to be of service!";
+  return retString;
 }
 
 /**
- *  Helper function to convert individual generated schedules to 
+ *  CUSTOM CODE
+ *  Helper function to convert individual generated schedules to
  format that is readable and user friendly.
  */
 function convertAssignment(schedule){
-  var retString = ""
-  var timeKeys = Object.keys(schedule.halfHours).sort(function(a, b) {return a-b;})
-  console.log(schedule.halfHours, timeKeys)
-  for (var i = 0; i < timeKeys.length; i++){
-    var currentTime = timeKeys[i]
-    if (schedule.halfHours[currentTime] != null && schedule.halfHours[currentTime] != undefined){
-      retString = retString + (currentTime + " - " + (parseFloat(currentTime) + 0.5) + 
-        ": " + schedule.halfHours[currentTime] + ". <br>")
-    }
-  }
-  return (retString)
+  var retString = "";
+  // Get consolidated calendar events from half-hour blocks
+  var blocks = getBlocks(schedule.halfHours);
+
+  // Add each calendar event to the printed-out schedule
+  blocks.forEach(function(block) {
+    var startTime = parseFloat(block.startTime);
+    var endTime = parseFloat(startTime + block.length);
+    retString += startTime + "-" + endTime + ": " + block.name + "<br />";
+  });
+
+  return retString;
 }
 
 /**

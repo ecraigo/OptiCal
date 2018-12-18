@@ -2,7 +2,6 @@ import {CalendarEvent} from './objectPrototypes.js';
 
 function swapTimes(assignments, hour1, hour2){
 	var hour1Assignment = assignments[hour1]
-	// console.log(hour1Assignment, assignments[hour2], "assignments", hour1, hour2)
 	assignments[hour1] = assignments[hour2]
 	assignments[hour2] = hour1Assignment
 }
@@ -22,7 +21,7 @@ function inTaskTimeRange(task, time) {
 function randomKey(obj) {
     var keys = Object.keys(obj)
     return keys[keys.length * Math.random() << 0];
-};
+}
 
 function findTaskByName(assignment, taskName) {
 	if (taskName === null) {
@@ -83,5 +82,5 @@ function getBlocks(halfHours) {
 }
 
 export {
-	swapTimes, inTaskTimeRange, randomKey, getBlocks
+	swapTimes, inTaskTimeRange, randomKey, getBlocks, findTaskByName
 }

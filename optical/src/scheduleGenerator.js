@@ -93,7 +93,7 @@ function solveCSP(tasksDesired, freeTimes) {
 		iterations = iterations + 1
 	}
 	// If we reached the max number of iterations then that means we did not find a valid assignment.
-	if (iterations == 1000) {
+	if (iterations == maxIterations) {
 		return;
 	}
 	// Otherwise, we found a valid assignment, therefore return.

@@ -78,6 +78,10 @@ function findNeighbor(assignment) {
   var success = false;
   var reps = 0;
 
+  if (assignment.halfHours.length < 2) {
+    return assignment;
+  }
+
   while (!success && reps < MAX_REPS) {
     var time1 = randomKey(assignment.halfHours);
     var time2 = time1;
@@ -108,8 +112,8 @@ function naiveHillClimbing(assignment) {
     var neighbor = findNeighbor(assignment);
 
     if (neighbor === undefined) {
-      // Likely no neighbors exist, so break
-      break;
+      // Likely no neighbors exist, so just return original assignment
+      return assignment;
     }
 
     // Take the best of the current and the neighboring assignment
@@ -127,13 +131,13 @@ function naiveHillClimbing(assignment) {
 function epsilonGreedyHillClimbing(assignment) {
   var reps = 0;
   var rnd;
-  var maxUtil = null;
-  var bestAssignment = null;
+  var maxUtil = utility(assignment);
+  var bestAssignment = assignment;
 
   while (reps < MAX_REPS) {
     var neighbor = findNeighbor(assignment);
     if (neighbor === undefined) {
-      break;
+      return assignment;
     }
 
     // Promote random exploration with prb of epsilon
@@ -148,7 +152,7 @@ function epsilonGreedyHillClimbing(assignment) {
 
     // If we improved, set reps to 0; otherwise, add 1
     var assignmentUtility = utility(assignment.halfHours);
-    if (maxUtil === null || assignmentUtility > maxUtil) {
+    if (assignmentUtility > maxUtil) {
       maxUtil = assignmentUtility;
       bestAssignment = assignment;
       reps = 0;
@@ -164,15 +168,15 @@ function epsilonGreedyHillClimbing(assignment) {
 function simulatedAnnealing(assignment) {
   var reps = 0;
   var temperature = INITIAL_TEMPERATURE;
-  var maxUtil = null;
-  var bestAssignment = null;
+  var maxUtil = utility(assignment);
+  var bestAssignment = assignment;
   var rnd;
 
   while (reps < MAX_REPS) {
     // Generate neighbor
     var neighbor = findNeighbor(assignment);
     if (neighbor === undefined) {
-      break;
+      return assignment;
     }
 
     var neighborUtility = utility(neighbor.halfHours);
@@ -196,7 +200,7 @@ function simulatedAnnealing(assignment) {
     assignmentUtility = utility(assignment.halfHours);
 
     // The best assignment propagates up
-    if (maxUtil === null || assignmentUtility > maxUtil) {
+    if (assignmentUtility > maxUtil) {
       maxUtil = assignmentUtility;
       bestAssignment = assignment;
       reps = 0;
